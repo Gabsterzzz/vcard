@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valentine's Card</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        #main-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        #gif-placeholder {
+            width: 300px;
+            height: 300px;
+            margin-bottom: 20px;
+        }
+
+        #gif-placeholder img {
+            width: 100%;
+            height: 100%;
+            border-radius: 15px;
+            object-fit: cover;
+        }
+
+        #question-text {
+            font-size: 32px;
+            font-weight: bold;
+            color: #ff1493;
+            margin-bottom: 30px;
+            font-family: 'Georgia', serif;
+        }
+
+        #button-container {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            position: relative;
+        }
+
+        button {
+            font-size: 18px;
+            font-weight: bold;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        #yes-btn {
+            background-color: #ff69b4;
+            color: white;
+            transform-origin: center;
+        }
+
+        #yes-btn:hover {
+            background-color: #ff1493;
+        }
+
+        #no-btn {
+            background-color: #f0f0f0;
+            color: #666;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        #no-btn:hover:not(:disabled) {
+            background-color: #e0e0e0;
+        }
+
+        #no-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* Celebration Screen Styles */
+        #celebration-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #ffffff;
+            z-index: 1000;
+        }
+
+        #celebration-text {
+            font-size: 80px;
+            font-weight: bold;
+            color: #ff69b4;
+            margin-bottom: 40px;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        #celebration-gif {
+            width: 550px;
+            height: 450px;
+        }
+
+        #celebration-gif img {
+            width: 100%;
+            height: 100%;
+            border-radius: 15px;
+            object-fit: cover;
+        }
+
+        /* Fireworks Container */
+        #fireworks-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        /* Firework particle */
+        .firework-particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            bottom: 0;
+        }
+
+        /* Full Screen YES Button */
+        .full-screen-yes {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            border-radius: 0 !important;
+            font-size: 100px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            z-index: 999 !important;
+            padding: 0 !important;
+            letter-spacing: 20px !important;
+        }
+
+        @media (max-width: 600px) {
+            #gif-placeholder {
+                width: 250px;
+                height: 250px;
+            }
+
+            #question-text {
+                font-size: 24px;
+            }
+
+            button {
+                font-size: 16px;
+                padding: 12px 30px;
+            }
+
+            #celebration-text {
+                font-size: 60px;
+            }
+
+            #celebration-gif {
+                width: 450px;
+                height: 350px;
+            }
+
+            .full-screen-yes {
+                font-size: 70px !important;
+                letter-spacing: 15px !important;
+            }
+        }
+
+        /* iPad specific sizing */
+        @media (min-width: 601px) and (max-width: 1024px) {
+            .full-screen-yes {
+                font-size: 90px !important;
+                letter-spacing: 18px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Main Container -->
+    <div id="main-container">
+        <!-- GIF Placeholder -->
+        <div id="gif-placeholder">
+            <img src="kawai.gif" alt="Romantic GIF">
+        </div>
+
+        <!-- Question Text -->
+        <div id="question-text">Will you be my Valentine?</div>
+
+        <!-- Button Container -->
+        <div id="button-container">
+            <button id="yes-btn">YES</button>
+            <button id="no-btn">NO</button>
+        </div>
+    </div>
+
+    <!-- Celebration Screen -->
+    <div id="celebration-screen">
+        <div id="celebration-text">YAYYY!!</div>
+        <div id="celebration-gif">
+            <img src="yiper.gif" alt="Celebration GIF">
+        </div>
+    </div>
+
+    <!-- Fireworks Container -->
+    <div id="fireworks-container"></div>
+
+    <script>
+        // Get elements
+        const yesBtn = document.getElementById('yes-btn');
+        const noBtn = document.getElementById('no-btn');
+        const mainContainer = document.getElementById('main-container');
+        const celebrationScreen = document.getElementById('celebration-screen');
+        const fireworksContainer = document.getElementById('fireworks-container');
+
+        // Click counter for NO button
+        let noClickCount = 0;
+        let noButtonOffset = 0; // Track horizontal movement
+
+        // Text sequence for NO button
+        const noButtonTexts = [
+            'NO',
+            'are you sure?',
+            'are you sure sure??',
+            'bib pleasee 🥹',
+            'SIGI NA PLEASEEEEEE',
+            'SAPAKAN NALANG OH'
+        ];
+
+        // Scale multiplier for YES button
+        let yesScale = 1;
+
+        // NO button click handler
+        noBtn.addEventListener('click', function() {
+            noClickCount++;
+
+            if (noClickCount < 6) {
+                // Update NO button text
+                noBtn.textContent = noButtonTexts[noClickCount];
+
+                // Move NO button to the right
+                noButtonOffset += 30; // Move 30px right each click
+                noBtn.style.transform = `translateX(${noButtonOffset}px)`;
+
+                // Increase YES button size
+                yesScale += 0.5;
+                yesBtn.style.transform = `scale(${yesScale})`;
+            } else if (noClickCount === 6) {
+                // 6th click - YES button takes over entire screen with spaced letters
+                yesBtn.classList.add('full-screen-yes');
+                yesBtn.textContent = 'Y E S';
+                noBtn.disabled = true;
+                noBtn.style.display = 'none';
+            }
+        });
+
+        // YES button click handler
+        yesBtn.addEventListener('click', function() {
+            // Hide main container
+            mainContainer.style.display = 'none';
+
+            // Show celebration screen
+            celebrationScreen.style.display = 'flex';
+
+            // Create fireworks
+            launchFireworks();
+        });
+
+        // Launch fireworks from bottom
+        function launchFireworks() {
+            const colors = ['#ff69b4', '#ff1493', '#ff91c7', '#ffc0cb', '#ff6b9d', '#ffb6c1'];
+            let fireworksLaunched = 0;
+            const maxFireworks = 25;
+
+            const launchInterval = setInterval(() => {
+                if (fireworksLaunched >= maxFireworks) {
+                    clearInterval(launchInterval);
+                    return;
+                }
+
+                // Random x position
+                const startX = Math.random() * window.innerWidth;
+                const color = colors[Math.floor(Math.random() * colors.length)];
+
+                // Create firework particle
+                const particle = document.createElement('div');
+                particle.className = 'firework-particle';
+                particle.style.left = startX + 'px';
+                particle.style.backgroundColor = color;
+                particle.style.boxShadow = `0 0 10px ${color}`;
+                fireworksContainer.appendChild(particle);
+
+                // Animate upward
+                const targetY = 200 + Math.random() * 300;
+                const duration = 1000 + Math.random() * 500;
+
+                let startTime = null;
+                function animateUp(timestamp) {
+                    if (!startTime) startTime = timestamp;
+                    const progress = (timestamp - startTime) / duration;
+
+                    if (progress < 1) {
+                        particle.style.bottom = (progress * targetY) + 'px';
+                        requestAnimationFrame(animateUp);
+                    } else {
+                        // Explode into sparks
+                        explode(startX, window.innerHeight - targetY, color);
+                        particle.remove();
+                    }
+                }
+                requestAnimationFrame(animateUp);
+
+                fireworksLaunched++;
+            }, 150);
+        }
+
+        // Create explosion effect
+        function explode(x, y, baseColor) {
+            const colors = ['#ff69b4', '#ff1493', '#ff91c7', '#ffc0cb', '#ff6b9d', '#ffb6c1'];
+            const sparkCount = 30;
+
+            for (let i = 0; i < sparkCount; i++) {
+                const spark = document.createElement('div');
+                spark.className = 'firework-particle';
+                spark.style.left = x + 'px';
+                spark.style.top = y + 'px';
+                spark.style.width = '6px';
+                spark.style.height = '6px';
+                const sparkColor = colors[Math.floor(Math.random() * colors.length)];
+                spark.style.backgroundColor = sparkColor;
+                spark.style.boxShadow = `0 0 8px ${sparkColor}`;
+                fireworksContainer.appendChild(spark);
+
+                // Random direction
+                const angle = (Math.PI * 2 / sparkCount) * i;
+                const velocity = 50 + Math.random() * 100;
+                const vx = Math.cos(angle) * velocity;
+                const vy = Math.sin(angle) * velocity;
+
+                let sparkX = x;
+                let sparkY = y;
+                let sparkVx = vx;
+                let sparkVy = vy;
+                let opacity = 1;
+                let startTime = null;
+
+                function animateSpark(timestamp) {
+                    if (!startTime) startTime = timestamp;
+                    const elapsed = timestamp - startTime;
+
+                    if (elapsed < 1000 && opacity > 0) {
+                        sparkX += sparkVx * 0.016;
+                        sparkY += sparkVy * 0.016;
+                        sparkVy += 0.5; // Gravity
+                        opacity -= 0.015;
+
+                        spark.style.left = sparkX + 'px';
+                        spark.style.top = sparkY + 'px';
+                        spark.style.opacity = opacity;
+
+                        requestAnimationFrame(animateSpark);
+                    } else {
+                        spark.remove();
+                    }
+                }
+                requestAnimationFrame(animateSpark);
+            }
+        }
+    </script>
+</body>
+</html>
